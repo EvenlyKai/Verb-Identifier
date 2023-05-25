@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <cmath>
 
 using namespace std;
 
@@ -9,7 +10,7 @@ void removeUnecessarySpaces(string&);
 void getWords(string&, vector<string>&);
 void getVerbs(vector<string>&, vector<string>&);
 void showVerbs(vector<string>&);
-
+string copyStringIntoAnotherString(string&, string&, int, int);
 
 int main() {
     string sentence;
@@ -24,6 +25,7 @@ int main() {
     getWords(sentence, words);
     getVerbs(words, verbs);
     showVerbs(verbs);
+    cout << sentence << endl;
     return 0;
 }
 
@@ -37,49 +39,39 @@ void removeNonLetters(string& sentence) {
 }
 
 void removeUnecessarySpaces(string& sentence) {
-    bool firstSpaceFound = false;
-    int countSpacesBetweenWords = 0;
-    int iStartToDelete;
-
     for (int i = 0; i < (int) sentence.size(); i++) {
-        if (sentence[i] == ' ' && !firstSpaceFound) {
-            firstSpaceFound = true;
-            iStartToDelete = i;
+        if (sentence[i] == ' ' && sentence[i-1] != ' ') {
+            continue;
         }
-
-        if (sentence[i] != ' ' && firstSpaceFound) {
-
-            firstSpaceFound = false;
-            sentence.erase(iStartToDelete, countSpacesBetweenWords-1);
-            
-            countSpacesBetweenWords = 0;
+        if (sentence[i] != ' ') {
+            continue;
         }
-
-        if (firstSpaceFound && sentence[i] == ' ') {
-            countSpacesBetweenWords += 1;
-        }
+        sentence.erase(sentence.begin() + i);
+        i--;
     }
 } 
 
+string copyStringIntoAnotherString(string& sentence, string& buffer, int len, int firstCharacter) {
+    char tmp[len];    
+    sentence.copy(tmp, len, firstCharacter);
+
+    for (int i = 0; i < len; i++) {
+        buffer.push_back(tmp[i]); 
+    }
+
+    return buffer;
+}
+
 void getWords(string& sentence, vector<string>& words) {
-    int firstLetterFound = false;
+    int lastI = 0;
     string wordSave;
     for (int i = 0; i < (int) sentence.size(); i++) {
-        if (sentence[i] != ' ' && !firstLetterFound) {
-            firstLetterFound = true;
-        }
-        if (sentence[i] != ' ' && firstLetterFound) {    
-            wordSave.push_back(sentence[i]);
-        }
-
-        if (sentence[i] == ' ' && firstLetterFound) {
-            firstLetterFound = false;
-            words.push_back(wordSave);
+        if (sentence[i] == ' ') {
+            words.push_back(copyStringIntoAnotherString(sentence, wordSave, abs(lastI-i), lastI));
             wordSave.erase();
-        }
-        else if (i == (int) sentence.size()-1) {
-            firstLetterFound = false;
-            words.push_back(wordSave);
+            lastI = i+1;
+        } else if (i == (int) sentence.size()-1) {
+            words.push_back(copyStringIntoAnotherString(sentence, wordSave, abs(lastI-i-1), lastI));
             wordSave.erase();
         }
     }
